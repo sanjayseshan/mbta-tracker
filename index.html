@@ -32,7 +32,7 @@
     </section>
     <section>
         Line:
-        <select class="form-control" id="route_sel"></select>
+        <select  multiple class="form-control" id="route_sel"></select>
     </section>
     <section style="height:100%">
         <div id="mapid"></div>
@@ -42,7 +42,7 @@
         // see the "settings > JS" tab to see the imports of leaflet, PBF, and gtfs-realtime-pbf-js-module
 
         // Create the basic leaflet map:
-        var map = L.map("mapid").setView([42.30119, -71.11376], 12);
+        var map = L.map("mapid").setView([42.35139, -71.06593], 14);
 
         map.locate({ setView: true, maxZoom: 16 });
 
@@ -65,9 +65,9 @@
         //     attribution:
         //         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         // }).addTo(map);
-        L.tileLayer.provider('OpenStreetMap.Mapnik').addTo(map);
+        // L.tileLayer.provider('OpenStreetMap.Mapnik').addTo(map);
 
-        L.tileLayer('http://{s}.tile2.opencyclemap.org/transport/{z}/{x}/{y}.png').addTo(map);
+        // L.tileLayer('http://{s}.tile2.opencyclemap.org/transport/{z}/{x}/{y}.png').addTo(map);
         // L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         //     maxZoom: 19,
         //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -84,6 +84,10 @@
             maxZoom: 19,
             attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Map style: &copy; <a href="https://www.OpenRailwayMap.org">OpenRailwayMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
         });
+
+        L.tileLayer('https://mbta-map-tiles.s3.amazonaws.com/osm_tiles/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
         L.tileLayer.provider('OpenRailwayMap').addTo(map);
 
 
@@ -108,10 +112,14 @@
 
         async function placeRoutes() {
             console.log("updating...")
-            // for (i=0;i<1;i++){ //data.data.length
-            rt = document.getElementById('route_sel').value
-            console.log(rt);
-            await placeMarker(rt) //routeNames[i]
+            layer.clearLayers();
+
+            for (i=0;i<$('#route_sel').val().length;i++){ //data.data.length
+                // rt = document.getElementById('route_sel').value
+                rt = $('#route_sel').val()[i]
+                console.log(rt);
+                await placeMarker(rt) //routeNames[i]
+            }
             // await new Promise(r => setTimeout(r, 100));
             // }
         }
@@ -136,7 +144,6 @@
                     // processRoutes(res.data);
                     console.log(response.status, res.data.data);
                     data = res.data.data;
-                    layer.clearLayers();
 
                     for (i = 0; i < data.length; i++) {
                         angle = data[i].attributes.bearing
@@ -220,7 +227,7 @@
             style: function (feature) {
                 return {
                     stroke: true,
-                    color: "green",
+                    color: "red",
                     weight: 7
                     // color: feature.properties.color 
                 };
