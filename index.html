@@ -12,7 +12,14 @@
     <script src="leaflet-arrowheads.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
-    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
+    <script src="https://unpkg.com/esri-leaflet@3.0.14/dist/esri-leaflet.js"></script>
+
+    <!-- Load Esri Leaflet Vector from CDN -->
+    <script src="https://unpkg.com/esri-leaflet-vector@4.2.6/dist/esri-leaflet-vector.js" crossorigin=""></script>
+
+
     <title>MBTA Train/Bus Tracker</title>
     <style>
         html,
@@ -32,7 +39,7 @@
     </section>
     <section>
         Line:
-        <select  multiple class="form-control" id="route_sel"></select>
+        <select multiple class="form-control" id="route_sel"></select>
     </section>
     <section style="height:100%">
         <div id="mapid"></div>
@@ -86,12 +93,25 @@
         });
 
         L.tileLayer('https://mbta-map-tiles.s3.amazonaws.com/osm_tiles/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
         L.tileLayer.provider('OpenRailwayMap').addTo(map);
 
+        L.esri
+            .featureLayer({
+                url: "http://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/MBTA_Rapid_Transit/MapServer/6",
+                style: (feature) => {
+                    // console.log(feature)
+                    return {
+                    color: feature.properties.LINE,
 
-        routeNames = []; 
+                    };
+                    }
+            })
+            .addTo(map);
+
+
+        routeNames = [];
 
         routesjson = {};
 
@@ -114,7 +134,7 @@
             console.log("updating...")
             layer.clearLayers();
 
-            for (i=0;i<$('#route_sel').val().length;i++){ //data.data.length
+            for (i = 0; i < $('#route_sel').val().length; i++) { //data.data.length
                 // rt = document.getElementById('route_sel').value
                 rt = $('#route_sel').val()[i]
                 console.log(rt);
@@ -154,7 +174,8 @@
                                 route: route,
                                 route_start: 0,
                                 vehicle_label: routesjson[routeid].attributes.direction_names[data[i].attributes.direction_id],
-                                angle: angle
+                                angle: angle,
+                                state: data[i].attributes.current_status
                             },
                             "geometry": {
 
@@ -164,7 +185,7 @@
 
                                     [data[i].attributes.longitude, data[i].attributes.latitude],  // Starting point
 
-                                    [data[i].attributes.longitude + 0.001 * Math.sin(angle*Math.PI / 180), data[i].attributes.latitude + 0.001 * Math.cos(angle*Math.PI / 180)]   // Ending point
+                                    [data[i].attributes.longitude + 0.001 * Math.sin(angle * Math.PI / 180), data[i].attributes.latitude + 0.001 * Math.cos(angle * Math.PI / 180)]   // Ending point
 
                                 ]
 
@@ -222,19 +243,21 @@
 
 
         const layer = L.geoJSON([], {
-            arrowheads: {yawn: 90,
-                fill: true},
+            arrowheads: {
+                yawn: 90,
+                fill: true
+            },
             style: function (feature) {
                 return {
                     stroke: true,
-                    color: "red",
+                    color: "purple",
                     weight: 7
                     // color: feature.properties.color 
                 };
             }
         })
             .bindPopup(function (layer) {
-                return "Direction: " + layer.feature.properties.vehicle_label + "<br />Route: " + layer.feature.properties.route ;
+                return "Direction: " + layer.feature.properties.vehicle_label + "<br />Route: " + layer.feature.properties.route + "<br />State: " + layer.feature.properties.state;
             })
             .addTo(map);
 
@@ -251,8 +274,12 @@
 
     </script>
 
-    <div id="footer"><div class="navbar" >
-        <center><p style="margin-bottom: 0px">Copyright (C) Sanjay Seshan</p> </center>
-      </div></div>
+    <div id="footer">
+        <div class="navbar">
+            <center>
+                <p style="margin-bottom: 0px">Copyright (C) Sanjay Seshan</p>
+            </center>
+        </div>
+    </div>
 
 </body>
