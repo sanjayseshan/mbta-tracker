@@ -1,6 +1,6 @@
 # MBTA Tracker
 
-See: <a href="sanjay.seshan.org/mbta-tracker">sanjay.seshan.org/mbta-tracker</a>
+See: <a href="http://sanjay.seshan.org/mbta-tracker">http://sanjay.seshan.org/mbta-tracker</a>
 
 Uses MBTA (Boston area public transit) API v3
 
