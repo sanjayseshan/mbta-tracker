@@ -103,13 +103,26 @@
                 style: (feature) => {
                     // console.log(feature)
                     return {
-                    color: feature.properties.LINE,
+                        color: feature.properties.LINE,
 
                     };
-                    }
+                }
             })
             .addTo(map);
 
+
+        // L.esri
+        // .featureLayer({
+        //     url: "http://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/MBTA_Rapid_Transit/MapServer/0",
+        //     style: (feature) => {
+        //         console.log(feature)
+        //         return {
+        //         type: "circle",
+
+        //         };
+        //         }
+        // })
+        // .addTo(map);
 
         routeNames = [];
 
