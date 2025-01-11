@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<head>
+    <script src="https://unpkg.com/leaflet@latest/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-providers@latest/leaflet-providers.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <script src="leaflet.geometryutil.js"></script>
+    <script src="leaflet-arrowheads.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+    integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <style>
+        html,
+        body,
+        #mapid {
+            margin: 0px;
+            height: 95%;
+            width: 100%;
+        }
+    </style>
+
+</head>
+
+<body>
+    <section>
+        <h1>MBTA Train/Bus Tracker</h1>
+    </section>
+    <section>
+        Line:
+        <select class="form-control" id="route_sel"></select>
+    </section>
+    <section style="height:100%">
+        <div id="mapid"></div>
+    </section>
+
+    <script>
+        // see the "settings > JS" tab to see the imports of leaflet, PBF, and gtfs-realtime-pbf-js-module
+
+        // Create the basic leaflet map:
+        var map = L.map("mapid").setView([42.30119, -71.11376], 12);
+
+        map.locate({ setView: true, maxZoom: 16 });
+
+        function onLocationFound(e) {
+            var radius = e.accuracy;
+
+            L.marker(e.latlng).addTo(map)
+                .bindPopup("You are within " + radius + " meters from this point").openPopup();
+
+            L.circle(e.latlng, radius).addTo(map);
+        }
+
+        map.on('locationfound', onLocationFound);
+
+        // map.attributionControl.setPrefix('');
+
+        // Add the basemap:
+        // L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        //     maxZoom: 19,
+        //     attribution:
+        //         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        // }).addTo(map);
+        // L.tileLayer.provider('OpenStreetMap.Mapnik').addTo(map);
+
+        L.tileLayer('http://{s}.tile2.opencyclemap.org/transport/{z}/{x}/{y}.png').addTo(map);
+        // L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        //     maxZoom: 19,
+        //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        // });
+        // L.tileLayer('https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png', {
+        //     maxZoom: 19,
+        //     attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Map style: &copy; <a href="https://www.OpenRailwayMap.org">OpenRailwayMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+        // });
+        // var OpenStreetMap_Mapnik = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // maxZoom: 19,
+        // attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        // });
+        var OpenRailwayMap = L.tileLayer('https://{s}.tiles.openrailwaymap.org/standard/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Map style: &copy; <a href="https://www.OpenRailwayMap.org">OpenRailwayMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+        });
+        L.tileLayer.provider('OpenRailwayMap').addTo(map);
+
+
+        routeNames = [];
+
+        routesjson = {};
+
+        async function processRoutes(data) {
+            routesjson = data.data;
+            for (i = 0; i < data.data.length; i++) { //data.data.length
+                console.log(data.data[i].id);
+                routeNames.push(data.data[i].id)
+                select = document.getElementById('route_sel');
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.innerHTML = data.data[i].id;
+                select.appendChild(opt);
+                // await placeMarker(data.data[i].id)
+                // await new Promise(r => setTimeout(r, 100));
+            }
+        }
+
+        async function placeRoutes() {
+            console.log("updating...")
+            // for (i=0;i<1;i++){ //data.data.length
+            rt = document.getElementById('route_sel').value
+            console.log(rt);
+            await placeMarker(rt) //routeNames[i]
+            // await new Promise(r => setTimeout(r, 100));
+            // }
+        }
+
+        const placeMarker = async (routeid) => {
+            // url = "https://api-v3.mbta.com/predictions?filter\[route\]="+route+"\&include=vehicle"
+            route = routeNames[routeid]
+            url = "https://api-v3.mbta.com/vehicles?filter\[route\]=" + route
+
+            console.log(url)
+
+
+            fetch(url).then(response =>
+                response.json().then(data => ({
+                    data: data,
+                    status: response.status,
+                    headers: {
+                        'x-api-key': '49a2ff813707406f99fc83fb0b36cd1c',
+                    }
+                })
+                ).then(res => {
+                    // processRoutes(res.data);
+                    console.log(response.status, res.data.data);
+                    data = res.data.data;
+                    layer.clearLayers();
+
+                    for (i = 0; i < data.length; i++) {
+                        angle = data[i].attributes.bearing
+                        map_add = {
+                            type: "Feature",
+                            properties: {
+                                // Depending on your data source, the properties available on "gtfsObject" may be different:
+                                route: route,
+                                route_start: 0,
+                                vehicle_label: routesjson[routeid].attributes.direction_names[data[i].attributes.direction_id],
+                                angle: angle
+                            },
+                            "geometry": {
+
+                                "type": "LineString",
+
+                                "coordinates": [
+
+                                    [data[i].attributes.longitude, data[i].attributes.latitude],  // Starting point
+
+                                    [data[i].attributes.longitude + 0.001 * Math.sin(angle*Math.PI / 180), data[i].attributes.latitude + 0.001 * Math.cos(angle*Math.PI / 180)]   // Ending point
+
+                                ]
+
+                            }
+                            // geometry: {
+                            //     type: "Point",
+                            //     coordinates: [
+                            //         data[i].attributes.longitude,
+                            //         data[i].attributes.latitude,
+                            //     ]
+                            // }
+                            // "geometry": {
+                            //     "type": "Polygon",
+                            //     coordinates: [
+                            //         data[i].attributes.longitude,
+                            //         data[i].attributes.latitude
+                            //     ]
+                            // }
+                        };
+                        console.log([data[i].attributes.longitude, data[i].attributes.latitude])
+                        layer.addData(map_add);
+
+                    }
+
+                }));
+
+        }
+
+
+        const getRoutes = async () => {
+            url = "https://api-v3.mbta.com/routes"
+            // response = await fetch(url);
+            // routes = response.json()
+            // return routes;
+            // const response = await fetch(url);
+            // const data = await response.json();
+            // console.log(response.status, data);
+            // return data;
+            fetch(url).then(response =>
+                response.json().then(data => ({
+                    data: data,
+                    status: response.status,
+                    headers: {
+                        'x-api-key': '49a2ff813707406f99fc83fb0b36cd1c',
+                    }
+                })
+                ).then(res => {
+                    processRoutes(res.data);
+                    console.log(response.status, res.data)
+                }));
+            // url = "https://api-v3.mbta.com/predictions?filter[route]=CR-Providence\&include=vehicle,schedule"   
+            // response = await fetch(url);
+            // routes = response.json()
+        }
+
+
+        const layer = L.geoJSON([], {
+            arrowheads: {yawn: 90,
+                fill: true},
+            style: function (feature) {
+                return {
+                    stroke: true,
+                    color: "green",
+                    weight: 7
+                    // color: feature.properties.color 
+                };
+            }
+        })
+            .bindPopup(function (layer) {
+                return "Direction: " + layer.feature.properties.vehicle_label + "<br />Route: " + layer.feature.properties.route ;
+            })
+            .addTo(map);
+
+        // const updateLayer = async (layer) => {
+        //     const locations = await pbfToGeojson();
+        //     layer.addData(locations);
+        // };
+
+        // updateLayer(layer);
+
+        getRoutes();
+
+        setInterval(placeRoutes, 3000);
+
+    </script>
+
+    <div id="footer"><div class="navbar" >
+        <center><p style="margin-bottom: 0px">Copyright (C) Sanjay Seshan</p> </center>
+      </div></div>
+
+</body>
