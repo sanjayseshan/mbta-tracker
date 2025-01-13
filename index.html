@@ -72,7 +72,7 @@
         //     attribution:
         //         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         // }).addTo(map);
-        // L.tileLayer.provider('OpenStreetMap.Mapnik').addTo(map);
+        L.tileLayer.provider('OpenStreetMap.Mapnik').addTo(map);
 
         // L.tileLayer('http://{s}.tile2.opencyclemap.org/transport/{z}/{x}/{y}.png').addTo(map);
         // L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -95,7 +95,7 @@
         L.tileLayer('https://mbta-map-tiles.s3.amazonaws.com/osm_tiles/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
-        L.tileLayer.provider('OpenRailwayMap').addTo(map);
+        // L.tileLayer.provider('OpenRailwayMap').addTo(map);
 
         L.esri
             .featureLayer({
@@ -109,6 +109,53 @@
                 }
             })
             .addTo(map);
+
+
+            L.esri
+            .featureLayer({
+                url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/MBTA_Commuter_Rail/MapServer/3",
+                style: (feature) => {
+                    // console.log(feature)
+                    return {
+                        color: "purple",
+
+                    };
+                }
+            })
+            .addTo(map);
+
+
+        // L.esri
+        //     .dynamicMapLayer({
+        //         url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/MBTA_Commuter_Rail/MapServer",
+        //         opacity: 0.7,
+        //         "drawingInfo": { showLabels: true,scaleSymbols:true },
+        //         layers: [0,1,2,3]
+        //         // style: (feature) => {
+        //         //     // console.log(feature)
+        //         //     return {
+        //         //         color: feature.properties.LINE,
+
+        //         //     };
+        //         // }
+        //     })
+        //     .addTo(map);
+
+
+        //     // L.esri
+            // .dynamicMapLayer({
+            //     url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/MBTA_Rapid_Transit/FeatureServer",
+            //     opacity: 0.7,
+            //     "drawingInfo": { showLabels: true },
+            //     layers: [0,1,2,3,4,5,6]
+            //     // style: (feature) => {
+            //     //     // console.log(feature)
+            //     //     return {
+            //     //         color: feature.properties.LINE,
+
+            //     //     };
+            //     // }
+            // })
 
 
         // L.esri
@@ -263,7 +310,7 @@
             style: function (feature) {
                 return {
                     stroke: true,
-                    color: "purple",
+                    color: "black",
                     weight: 7
                     // color: feature.properties.color 
                 };
