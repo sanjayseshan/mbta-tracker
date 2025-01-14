@@ -39,7 +39,7 @@
     </section>
     <section>
         Line:
-        <select multiple class="form-control" id="route_sel"></select>
+        <select multiple class="form-control" id="route_sel" onchange="placeStations()"></select>
     </section>
     <section style="height:100%">
         <div id="mapid"></div>
@@ -178,7 +178,7 @@
         async function processRoutes(data) {
             routesjson = data.data;
             for (i = 0; i < data.data.length; i++) { //data.data.length
-                console.log(data.data[i].id);
+                // console.log(data.data[i].id);
                 routeNames.push(data.data[i].id)
                 select = document.getElementById('route_sel');
                 var opt = document.createElement('option');
@@ -190,14 +190,86 @@
             }
         }
 
+
+        async function processStops(data, route) {
+            data = data.data;
+            for (i = 0; i < data.length; i++) { //data.data.length
+                console.log(data[i]);
+                if (data[i].relationships.parent_station.data != null) continue;
+                var greenIcon = L.icon({
+                    iconUrl: 'MBTA.png',
+                    shadowUrl: '',
+                    iconSize:     [20, 20], // size of the icon
+                    shadowSize:   [50, 64], // size of the shadow
+                    iconAnchor:   [22, 22], // point of the icon which will correspond to marker's location
+                    shadowAnchor: [4, 62],  // the same for the shadow
+                    popupAnchor:  [-3, -26] // point from which the popup should open relative to the iconAnchor
+                });
+                L.marker([data[i].attributes.latitude, data[i].attributes.longitude], {icon: greenIcon}).addTo(map)
+                .bindPopup(data[i].attributes.name +", "+route);
+                // map_add = {
+                //             type: "Feature",
+                //             properties: {
+                //                 // Depending on your data source, the properties available on "gtfsObject" may be different:
+                //                 route: data[i].attributes.name,
+                //                 route_start: 0,
+                //                 vehicle_label: data[i].attributes.platform_name,
+                //                 angle: 0,
+                //                 state: 0
+                //             },
+                //             "geometry": {
+
+                //                 "type": "Point",
+
+                //                 "coordinates": [
+
+                //                     data[i].attributes.longitude, data[i].attributes.latitude
+
+                //                 ]
+
+                //             }
+                //             // geometry: {
+                //             //     type: "Point",
+                //             //     coordinates: [
+                //             //         data[i].attributes.longitude,
+                //             //         data[i].attributes.latitude,
+                //             //     ]
+                //             // }
+                //             // "geometry": {
+                //             //     "type": "Polygon",
+                //             //     coordinates: [
+                //             //         data[i].attributes.longitude,
+                //             //         data[i].attributes.latitude
+                //             //     ]
+                //             // }
+                //         };
+                //         // console.log([data[i].attributes.longitude, data[i].attributes.latitude])
+                //         layer.addData(map_add);
+            }
+        }
+
+        function placeStations() {
+            // console.log("updating...")
+            // layer.clearLayers();
+
+            for (i = 0; i < $('#route_sel').val().length; i++) { //data.data.length
+                // rt = document.getElementById('route_sel').value
+                rt = $('#route_sel').val()[i]
+                // console.log(rt);
+                getStops(routeNames[rt])
+            }
+            // await new Promise(r => setTimeout(r, 100));
+            // }
+        }
+
         async function placeRoutes() {
-            console.log("updating...")
+            // console.log("updating...")
             layer.clearLayers();
 
             for (i = 0; i < $('#route_sel').val().length; i++) { //data.data.length
                 // rt = document.getElementById('route_sel').value
                 rt = $('#route_sel').val()[i]
-                console.log(rt);
+                // console.log(rt);
                 await placeMarker(rt) //routeNames[i]
             }
             // await new Promise(r => setTimeout(r, 100));
@@ -209,7 +281,7 @@
             route = routeNames[routeid]
             url = "https://api-v3.mbta.com/vehicles?filter\[route\]=" + route
 
-            console.log(url)
+            // console.log(url)
 
 
             fetch(url).then(response =>
@@ -222,7 +294,7 @@
                 })
                 ).then(res => {
                     // processRoutes(res.data);
-                    console.log(response.status, res.data.data);
+                    // console.log(response.status, res.data.data);
                     data = res.data.data;
 
                     for (i = 0; i < data.length; i++) {
@@ -265,7 +337,7 @@
                             //     ]
                             // }
                         };
-                        console.log([data[i].attributes.longitude, data[i].attributes.latitude])
+                        // console.log([data[i].attributes.longitude, data[i].attributes.latitude])
                         layer.addData(map_add);
 
                     }
@@ -294,12 +366,41 @@
                 })
                 ).then(res => {
                     processRoutes(res.data);
-                    console.log(response.status, res.data)
+                    // console.log(response.status, res.data)
                 }));
             // url = "https://api-v3.mbta.com/predictions?filter[route]=CR-Providence\&include=vehicle,schedule"   
             // response = await fetch(url);
             // routes = response.json()
         }
+
+
+
+        const getStops = async (route) => {
+            url = "https://api-v3.mbta.com/stops\?filter\[route\]="+route
+            // response = await fetch(url);
+            // routes = response.json()
+            // return routes;
+            // const response = await fetch(url);
+            // const data = await response.json();
+            // console.log(response.status, data);
+            // return data;
+            fetch(url).then(response =>
+                response.json().then(data => ({
+                    data: data,
+                    status: response.status,
+                    headers: {
+                        'x-api-key': '49a2ff813707406f99fc83fb0b36cd1c',
+                    }
+                })
+                ).then(res => {
+                    processStops(res.data, route);
+                    // console.log(response.status, res.data)
+                }));
+            // url = "https://api-v3.mbta.com/predictions?filter[route]=CR-Providence\&include=vehicle,schedule"   
+            // response = await fetch(url);
+            // routes = response.json()
+        }
+
 
 
         const layer = L.geoJSON([], {
@@ -329,6 +430,7 @@
         // updateLayer(layer);
 
         getRoutes();
+        getStops();
 
         setInterval(placeRoutes, 3000);
 
