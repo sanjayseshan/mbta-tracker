@@ -111,7 +111,7 @@
             .addTo(map);
 
 
-            L.esri
+        L.esri
             .featureLayer({
                 url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/MBTA_Commuter_Rail/MapServer/3",
                 style: (feature) => {
@@ -143,19 +143,19 @@
 
 
         //     // L.esri
-            // .dynamicMapLayer({
-            //     url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/MBTA_Rapid_Transit/FeatureServer",
-            //     opacity: 0.7,
-            //     "drawingInfo": { showLabels: true },
-            //     layers: [0,1,2,3,4,5,6]
-            //     // style: (feature) => {
-            //     //     // console.log(feature)
-            //     //     return {
-            //     //         color: feature.properties.LINE,
+        // .dynamicMapLayer({
+        //     url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/MBTA_Rapid_Transit/FeatureServer",
+        //     opacity: 0.7,
+        //     "drawingInfo": { showLabels: true },
+        //     layers: [0,1,2,3,4,5,6]
+        //     // style: (feature) => {
+        //     //     // console.log(feature)
+        //     //     return {
+        //     //         color: feature.properties.LINE,
 
-            //     //     };
-            //     // }
-            // })
+        //     //     };
+        //     // }
+        // })
 
 
         // L.esri
@@ -174,6 +174,35 @@
         routeNames = [];
 
         routesjson = {};
+        cnt_id = 0;
+
+        function getPred(name, id, route) {
+            cnt_id++;
+            console.log(id)
+            url = "https://api-v3.mbta.com/predictions?filter\[stop\]=" + id
+
+            // console.log(url)
+
+            preds = []
+            fetch(url, {
+                headers: {
+                    'x-api-key': '49a2ff813707406f99fc83fb0b36cd1c',
+                }
+            }).then(response =>
+                response.json().then(data => ({
+                    data: data,
+                    status: response.status,
+                })
+                ).then(res => {
+                    console.log(res)
+
+                    console.log(res.data)
+                    preds = res.data.data;
+                    p0 = preds[0].attributes.arrival_time
+                    setTimeout(function () { document.getElementById('preds').innerHTML = p0 }, 500);
+                }));
+            return name + ", " + route + ", " + "<div id='preds'></div>";
+        }
 
         async function processRoutes(data) {
             routesjson = data.data;
@@ -194,22 +223,27 @@
         async function processStops(data, route) {
             data = data.data;
             for (i = 0; i < data.length; i++) { //data.data.length
-                console.log(data[i]);
+                // console.log(data[i]);
                 if (data[i].relationships.parent_station.data != null) continue;
                 var greenIcon = L.icon({
                     iconUrl: 'MBTA.png',
                     shadowUrl: '',
-                    iconSize:     [20, 20], // size of the icon
-                    shadowSize:   [50, 64], // size of the shadow
-                    iconAnchor:   [22, 22], // point of the icon which will correspond to marker's location
+                    iconSize: [20, 20], // size of the icon
+                    shadowSize: [50, 64], // size of the shadow
+                    iconAnchor: [22, 22], // point of the icon which will correspond to marker's location
                     shadowAnchor: [4, 62],  // the same for the shadow
-                    popupAnchor:  [-3, -26] // point from which the popup should open relative to the iconAnchor
+                    popupAnchor: [-3, -26] // point from which the popup should open relative to the iconAnchor
                 });
-                L.marker([data[i].attributes.latitude, data[i].attributes.longitude], {icon: greenIcon}).addTo(layer2)
-                .bindPopup(data[i].attributes.name +", "+route);
+                f = new Function('layer', 'return getPred("' + data[i].attributes.name + '", "' + data[i].id + '", "' + route + '")')
+                // f = function(layer){console.log(layer);return getPred(data[i], i)}
+                // console.log(f, f())
+                // console.log(data[i])
+                // popup=L.popup().setContent(f)
+                L.marker([data[i].attributes.latitude, data[i].attributes.longitude], { icon: greenIcon })
+                    .bindPopup(f).addTo(layer2); // data[i].attributes.name +", "+route
                 // map_add = {
                 //             type: "Feature",
-                //             properties: {
+                //             properties: { 
                 //                 // Depending on your data source, the properties available on "gtfsObject" may be different:
                 //                 route: data[i].attributes.name,
                 //                 route_start: 0,
@@ -285,7 +319,11 @@
             // console.log(url)
 
 
-            fetch(url).then(response =>
+            fetch(url, {
+                headers: {
+                    'x-api-key': '49a2ff813707406f99fc83fb0b36cd1c',
+                }
+            }).then(response =>
                 response.json().then(data => ({
                     data: data,
                     status: response.status,
@@ -357,7 +395,11 @@
             // const data = await response.json();
             // console.log(response.status, data);
             // return data;
-            fetch(url).then(response =>
+            fetch(url, {
+                headers: {
+                    'x-api-key': '49a2ff813707406f99fc83fb0b36cd1c',
+                }
+            }).then(response =>
                 response.json().then(data => ({
                     data: data,
                     status: response.status,
@@ -377,7 +419,7 @@
 
 
         const getStops = async (route) => {
-            url = "https://api-v3.mbta.com/stops\?filter\[route\]="+route
+            url = "https://api-v3.mbta.com/stops\?filter\[route\]=" + route
             // response = await fetch(url);
             // routes = response.json()
             // return routes;
@@ -385,7 +427,11 @@
             // const data = await response.json();
             // console.log(response.status, data);
             // return data;
-            fetch(url).then(response =>
+            fetch(url, {
+                headers: {
+                    'x-api-key': '49a2ff813707406f99fc83fb0b36cd1c',
+                }
+            }).then(response =>
                 response.json().then(data => ({
                     data: data,
                     status: response.status,
@@ -424,7 +470,7 @@
             .addTo(map);
 
 
-            const layer = L.geoJSON([], {
+        const layer = L.geoJSON([], {
             arrowheads: {
                 yawn: 90,
                 fill: true
@@ -453,7 +499,7 @@
         getRoutes();
         getStops();
 
-        setInterval(placeRoutes, 3000);
+        setInterval(placeRoutes, 1000);
 
     </script>
 
