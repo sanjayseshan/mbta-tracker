@@ -38,11 +38,17 @@
         <h1>MBTA Train/Bus Tracker</h1>
     </section>
     <section>
+        Track your Boston area public transit. Find where your bus or train is.<br><br>
         Line:
         <select multiple class="form-control" id="route_sel" onchange="placeStations()"></select>
     </section>
     <section style="height:100%">
         <div id="mapid"></div>
+    </section>
+
+    <section>
+        <h3>Alerts:</h3>
+        <div id="alerts"></div>
     </section>
 
     <script>
@@ -99,6 +105,20 @@
 
         L.esri
             .featureLayer({
+                url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/MBTA_Commuter_Rail/MapServer/3",
+                style: (feature) => {
+                    // console.log(feature)
+                    return {
+                        color: "purple",
+
+                    };
+                }
+            })
+            .addTo(map);
+
+
+        L.esri
+            .featureLayer({
                 url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/MBTA_Rapid_Transit/MapServer/6",
                 style: (feature) => {
                     // console.log(feature)
@@ -111,18 +131,6 @@
             .addTo(map);
 
 
-        L.esri
-            .featureLayer({
-                url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/MBTA_Commuter_Rail/MapServer/3",
-                style: (feature) => {
-                    // console.log(feature)
-                    return {
-                        color: "purple",
-
-                    };
-                }
-            })
-            .addTo(map);
 
 
         // L.esri
@@ -174,12 +182,13 @@
         routeNames = [];
 
         routesjson = {};
+        routeLookup = {};
         cnt_id = 0;
 
         function getPred(name, id, route) {
             cnt_id++;
-            console.log(id)
-            url = "https://api-v3.mbta.com/predictions?filter\[stop\]=" + id
+            // console.log(id)
+            url = "https://api-v3.mbta.com/predictions?filter\[stop\]=" + id //+ "\&filter\[route\]="+route
 
             // console.log(url)
 
@@ -194,14 +203,20 @@
                     status: response.status,
                 })
                 ).then(res => {
-                    console.log(res)
+                    // console.log(res)
 
-                    console.log(res.data)
+                    // console.log(res.data)
                     preds = res.data.data;
-                    p0 = preds[0].attributes.arrival_time
-                    setTimeout(function () { document.getElementById('preds').innerHTML = p0 }, 500);
+                    merge = ""
+                    for (i = 0; i < res.data.data.length; i++) {
+                        p0 = (new Date(preds[i].attributes.arrival_time)).toLocaleTimeString()
+                        p1 = (new Date(preds[i].attributes.departure_time)).toLocaleTimeString()
+                        dir = routesjson[routeLookup[preds[i].relationships.route.data.id]].attributes.direction_names[preds[i].attributes.direction_id]
+                        merge += "Arr: " + p0 + " Dep: " + p1 + " Route: " + preds[i].relationships.route.data.id + " " + dir + "<br>"
+                    }
+                    setTimeout(function () { document.getElementById('preds').innerHTML = merge }, 500);
                 }));
-            return name + ", " + route + ", " + "<div id='preds'></div>";
+            return "<b>" + name + "</b><div id='preds' style='height:100px;overflow:scroll;'>Loading..</div>";
         }
 
         async function processRoutes(data) {
@@ -209,6 +224,7 @@
             for (i = 0; i < data.data.length; i++) { //data.data.length
                 // console.log(data.data[i].id);
                 routeNames.push(data.data[i].id)
+                routeLookup[String(data.data[i].id)] = i
                 select = document.getElementById('route_sel');
                 var opt = document.createElement('option');
                 opt.value = i;
@@ -240,7 +256,7 @@
                 // console.log(data[i])
                 // popup=L.popup().setContent(f)
                 L.marker([data[i].attributes.latitude, data[i].attributes.longitude], { icon: greenIcon })
-                    .bindPopup(f).addTo(layer2); // data[i].attributes.name +", "+route
+                    .bindPopup(f, { minWidth: 400 }).addTo(layer2); // data[i].attributes.name +", "+route
                 // map_add = {
                 //             type: "Feature",
                 //             properties: { 
@@ -286,12 +302,14 @@
             // console.log("updating...")
             // layer.clearLayers();
             layer2.clearLayers();
-
+            document.getElementById('alerts').innerHTML = ""
             for (i = 0; i < $('#route_sel').val().length; i++) { //data.data.length
                 // rt = document.getElementById('route_sel').value
                 rt = $('#route_sel').val()[i]
                 // console.log(rt);
                 getStops(routeNames[rt])
+
+                getAlerts(routeNames[rt])
             }
             // await new Promise(r => setTimeout(r, 100));
             // }
@@ -488,6 +506,38 @@
                 return "Direction: " + layer.feature.properties.vehicle_label + "<br />Route: " + layer.feature.properties.route + "<br />State: " + layer.feature.properties.state;
             })
             .addTo(map);
+
+
+        function getAlerts(route) {
+            url = "https://api-v3.mbta.com/alerts?filter\[route\]=" + route
+
+            fetch(url, {
+                headers: {
+                    'x-api-key': '49a2ff813707406f99fc83fb0b36cd1c',
+                }
+            }).then(response =>
+                response.json().then(data => ({
+                    data: data,
+                    status: response.status,
+                })
+                ).then(res => {
+                    // console.log(res)
+
+                    // console.log(res.data)
+                    alerts = res.data.data;
+                    merge = ""
+                    for (i = 0; i < res.data.data.length; i++) {
+
+                        merge += "<li>" + alerts[i].attributes.short_header
+
+                        if (alerts[i].attributes.description != null) merge += "<ul><li>" + alerts[i].attributes.description + "</ul></li>"
+
+                        merge += "</li>"
+                    }
+                    document.getElementById('alerts').innerHTML += "<b>Line: " + route + "</b><br><ul>" + merge + "</ul>"
+                }));
+        }
+        // getAlerts();
 
         // const updateLayer = async (layer) => {
         //     const locations = await pbfToGeojson();
