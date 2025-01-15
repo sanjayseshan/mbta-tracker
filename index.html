@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 
 <head>
-    <script src="https://unpkg.com/leaflet@latest/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-providers@latest/leaflet-providers.js"></script>
+    <script src="leaflet.js"></script>
+    <script src="leaflet-providers.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
+    <link rel="stylesheet" href="leaflet.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
     <script src="leaflet.geometryutil.js"></script>
@@ -14,10 +14,10 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
         integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
 
-    <script src="https://unpkg.com/esri-leaflet@3.0.14/dist/esri-leaflet.js"></script>
+    <script src="esri-leaflet.js"></script>
 
     <!-- Load Esri Leaflet Vector from CDN -->
-    <script src="https://unpkg.com/esri-leaflet-vector@4.2.6/dist/esri-leaflet-vector.js" crossorigin=""></script>
+    <script src="esri-leaflet-vector.js" crossorigin=""></script>
 
 
     <title>MBTA Train/Bus Tracker</title>
@@ -110,6 +110,22 @@
                     // console.log(feature)
                     return {
                         color: "purple",
+
+                    };
+                }
+            })
+            .addTo(map);
+
+
+            L.esri
+            .featureLayer({
+                url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/MBTA_Bus/FeatureServer/3",
+                style: (feature) => {
+                    // console.log(feature)
+                    return {
+                        color: "grey",
+                        opacity: 0.05,
+                        width: 0.1
 
                     };
                 }
