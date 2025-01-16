@@ -118,7 +118,7 @@
             .addTo(map);
 
 
-            L.esri
+        L.esri
             .featureLayer({
                 url: "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/MBTA_Bus/FeatureServer/3",
                 style: (feature) => {
@@ -229,7 +229,7 @@
                         p0 = (new Date(preds[i].attributes.arrival_time)).toLocaleTimeString()
                         p1 = (new Date(preds[i].attributes.departure_time)).toLocaleTimeString()
                         dir = routesjson[routeLookup[preds[i].relationships.route.data.id]].attributes.direction_names[preds[i].attributes.direction_id]
-                        merge += "Arr: " + p0 + " Dep: " + p1 + " Route: " + preds[i].relationships.route.data.id + " " + dir + " " + routesjson[routeLookup[preds[i].relationships.route.data.id]].attributes.direction_destinations[preds[i].attributes.direction_id] +"<br>"
+                        merge += "Arr: " + p0 + " Dep: " + p1 + " Route: " + preds[i].relationships.route.data.id + " " + dir + " " + routesjson[routeLookup[preds[i].relationships.route.data.id]].attributes.direction_destinations[preds[i].attributes.direction_id] + "<br>"
                     }
                     setTimeout(function () { document.getElementById('preds').innerHTML = merge }, 500);
                 }));
@@ -245,7 +245,7 @@
                 select = document.getElementById('route_sel');
                 var opt = document.createElement('option');
                 opt.value = i;
-                opt.innerHTML = ((data.data[i].attributes.short_name!="")?data.data[i].attributes.short_name+": ":"")+ data.data[i].attributes.long_name + " (" + data.data[i].id+")";
+                opt.innerHTML = ((data.data[i].attributes.short_name != "") ? data.data[i].attributes.short_name + ": " : "") + data.data[i].attributes.long_name + " (" + data.data[i].id + ")";
                 select.appendChild(opt);
                 // await placeMarker(data.data[i].id)
                 // await new Promise(r => setTimeout(r, 100));
@@ -380,12 +380,12 @@
                                 // Depending on your data source, the properties available on "gtfsObject" may be different:
                                 route: route,
                                 route_start: 0,
-                                vehicle_label: routesjson[routeid].attributes.direction_names[data[i].attributes.direction_id] +" "+routesjson[routeid].attributes.direction_destinations[data[i].attributes.direction_id],
+                                vehicle_label: routesjson[routeid].attributes.direction_names[data[i].attributes.direction_id] + " " + routesjson[routeid].attributes.direction_destinations[data[i].attributes.direction_id],
                                 angle: angle,
                                 state: data[i].attributes.current_status,
                                 speed: data[i].attributes.speed,
                                 occupancy: data[i].attributes.occupancy_status
-                                
+
                             },
                             "geometry": {
 
@@ -509,7 +509,7 @@
             .addTo(map);
 
 
-            const layer3 = L.geoJSON([], {
+        const layer3 = L.geoJSON([], {
             arrowheads: {
                 yawn: 90,
                 fill: true
@@ -544,10 +544,10 @@
             }
         })
             .bindPopup(function (layer) {
-                return "Direction: " + layer.feature.properties.vehicle_label + "<br />Route: " + layer.feature.properties.route + "<br />State: " + layer.feature.properties.state+ 
-                // "<br />Speed: " + layer.feature.properties.speed + " m/s ("+layer.feature.properties.speed*2.237+"mph)"+
-                ((layer.feature.properties.occupancy!=null)?"<br />Occupancy: " + layer.feature.properties.occupancy:"")
-                ;
+                return "Direction: " + layer.feature.properties.vehicle_label + "<br />Route: " + layer.feature.properties.route + "<br />State: " + layer.feature.properties.state +
+                    // "<br />Speed: " + layer.feature.properties.speed + " m/s ("+layer.feature.properties.speed*2.237+"mph)"+
+                    ((layer.feature.properties.occupancy != null) ? "<br />Occupancy: " + layer.feature.properties.occupancy : "")
+                    ;
             })
             .addTo(map);
 
@@ -600,7 +600,8 @@
     <div id="footer">
         <div class="navbar">
             <center>
-                <p style="margin-bottom: 0px">Copyright (C) 2025 Sanjay Seshan. Source <a href="https://github.com/sanjayseshan/mbta-tracker">here</a>. </p>
+                <p style="margin-bottom: 0px">Copyright (C) 2025 Sanjay Seshan. Source <a
+                        href="https://github.com/sanjayseshan/mbta-tracker">here</a>. </p>
             </center>
         </div>
     </div>
