@@ -57,15 +57,16 @@
         // Create the basic leaflet map:
         var map = L.map("mapid").setView([42.35139, -71.06593], 14);
 
-        map.locate({ setView: true, maxZoom: 16 });
+        map.locate({ setView: true, maxZoom: 16, watch: true });
 
         function onLocationFound(e) {
+            layer3.clearLayers()
             var radius = e.accuracy;
 
-            L.marker(e.latlng).addTo(map)
+            L.marker(e.latlng).addTo(layer3)
                 .bindPopup("You are within " + radius + " meters from this point").openPopup();
 
-            L.circle(e.latlng, radius).addTo(map);
+            L.circle(e.latlng, radius).addTo(layer3);
         }
 
         map.on('locationfound', onLocationFound);
@@ -489,6 +490,26 @@
 
 
         const layer2 = L.geoJSON([], {
+            arrowheads: {
+                yawn: 90,
+                fill: true
+            },
+            style: function (feature) {
+                return {
+                    stroke: true,
+                    color: "black",
+                    weight: 7
+                    // color: feature.properties.color 
+                };
+            }
+        })
+            // .bindPopup(function (layer) {
+            //     return "Direction: " + layer.feature.properties.vehicle_label + "<br />Route: " + layer.feature.properties.route + "<br />State: " + layer.feature.properties.state;
+            // })
+            .addTo(map);
+
+
+            const layer3 = L.geoJSON([], {
             arrowheads: {
                 yawn: 90,
                 fill: true
