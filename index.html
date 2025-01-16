@@ -59,13 +59,15 @@
 
         map.locate({ setView: true, maxZoom: 16, watch: true });
 
+        first = false
         function onLocationFound(e) {
             layer3.clearLayers()
             var radius = e.accuracy;
 
-            L.marker(e.latlng).addTo(layer3)
-                .bindPopup("You are within " + radius + " meters from this point").openPopup();
-
+            x = L.marker(e.latlng).addTo(layer3)
+                .bindPopup("You are within " + radius + " meters from this point")
+            if (!first) x.openPopup();
+            first = true
             L.circle(e.latlng, radius).addTo(layer3);
         }
 
