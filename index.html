@@ -244,7 +244,7 @@
                 select = document.getElementById('route_sel');
                 var opt = document.createElement('option');
                 opt.value = i;
-                opt.innerHTML = data.data[i].id;
+                opt.innerHTML = ((data.data[i].attributes.short_name!="")?data.data[i].attributes.short_name+": ":"")+ data.data[i].attributes.long_name + " (" + data.data[i].id+")";
                 select.appendChild(opt);
                 // await placeMarker(data.data[i].id)
                 // await new Promise(r => setTimeout(r, 100));
