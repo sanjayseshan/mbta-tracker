@@ -57,7 +57,7 @@
         // Create the basic leaflet map:
         var map = L.map("mapid").setView([42.35139, -71.06593], 14);
 
-        map.locate({ setView: true, maxZoom: 16, watch: true });
+        map.locate({ setView: false, maxZoom: 16, watch: true });
 
         first = false
         function onLocationFound(e) {
