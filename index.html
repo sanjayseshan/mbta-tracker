@@ -372,6 +372,7 @@
 
                     for (i = 0; i < data.length; i++) {
                         angle = data[i].attributes.bearing
+                        // console.log(data[i])
                         map_add = {
                             type: "Feature",
                             properties: {
@@ -380,7 +381,10 @@
                                 route_start: 0,
                                 vehicle_label: routesjson[routeid].attributes.direction_names[data[i].attributes.direction_id] +" "+routesjson[routeid].attributes.direction_destinations[data[i].attributes.direction_id],
                                 angle: angle,
-                                state: data[i].attributes.current_status
+                                state: data[i].attributes.current_status,
+                                speed: data[i].attributes.speed,
+                                occupancy: data[i].attributes.occupancy_status
+                                
                             },
                             "geometry": {
 
@@ -519,7 +523,10 @@
             }
         })
             .bindPopup(function (layer) {
-                return "Direction: " + layer.feature.properties.vehicle_label + "<br />Route: " + layer.feature.properties.route + "<br />State: " + layer.feature.properties.state;
+                return "Direction: " + layer.feature.properties.vehicle_label + "<br />Route: " + layer.feature.properties.route + "<br />State: " + layer.feature.properties.state+ 
+                // "<br />Speed: " + layer.feature.properties.speed + " m/s ("+layer.feature.properties.speed*2.237+"mph)"+
+                ((layer.feature.properties.occupancy!=null)?"<br />Occupancy: " + layer.feature.properties.occupancy:"")
+                ;
             })
             .addTo(map);
 
@@ -565,7 +572,7 @@
         getRoutes();
         getStops();
 
-        setInterval(placeRoutes, 1000);
+        setInterval(placeRoutes, 3000);
 
     </script>
 
