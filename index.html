@@ -380,7 +380,7 @@
                             type: "Feature",
                             properties: {
                                 // Depending on your data source, the properties available on "gtfsObject" may be different:
-                                route: route,
+                                route: routeNames[routeid],
                                 route_start: 0,
                                 vehicle_label: routesjson[routeid].attributes.direction_names[data[i].attributes.direction_id] + " " + routesjson[routeid].attributes.direction_destinations[data[i].attributes.direction_id],
                                 angle: angle,
